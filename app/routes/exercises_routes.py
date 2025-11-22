@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from sqlalchemy.exc import IntegrityError
-from models import Exercise
+from app.models import Exercise
 from app.extensions import db
 from app.schemas_pkg import exercise_schema, exercises_schema
 

@@ -1,59 +1,45 @@
 from flask import Blueprint, request, jsonify
 from sqlalchemy.exc import IntegrityError
 from app.extensions import db
-from models import Workout, Exercise, WorkoutExercise
+from app.models import WorkoutExercise
+from app.schemas_pkg import WorkoutExerciseSchema
 
-bp = Blueprint("workout_exercises", __name__, url_prefix="/workout_exercises")
+bp = Blueprint('workout_exercise', __name__, url_prefix='/workout_exercises')
+schema = WorkoutExerciseSchema()
+schemas = WorkoutExerciseSchema(many=True)
 
-@bp.route("", methods=["POST"])
-def add_exercise_to_workout():
-    data = request.get_json() or {}
+@bp.route('', methods=['GET'])
+def get_all_workout_exercises():
+    exercises = WorkoutExercise.query.all()
+    return jsonify(schemas.dump(exercises)), 200
 
-    workout_id = data.get("workout_id")
-    exercise_id = data.get("exercise_id")
-    reps = data.get("reps")
-    sets = data.get("sets")
-    duration_seconds = data.get("duration_seconds")
-
-    if not workout_id or not exercise_id:
-        return jsonify({"error": "workout_id and exercise_id are required"}), 400
-
-    workout = Workout.query.get(workout_id)
-    if not workout:
-        return jsonify({"error": "Workout not found"}), 404
-
-    exercise = Exercise.query.get(exercise_id)
+@bp.route('/<int:id>', methods=['GET'])
+def get_workout_exercise(id):
+    exercise = WorkoutExercise.query.get(id)
     if not exercise:
-        return jsonify({"error": "Exercise not found"}), 404
+        return jsonify({"error": "WorkoutExercise not found"}), 404
+    return jsonify(schema.dump(exercise)), 200
 
-    if ((reps is None or sets is None) and duration_seconds is None):
-        return jsonify({"error": "You must provide either reps/sets OR duration_seconds"}), 400
+@bp.route('/<int:id>', methods=['PATCH'])
+def update_workout_exercise(id):
+    exercise = WorkoutExercise.query.get(id)
+    if not exercise:
+        return jsonify({"error": "WorkoutExercise not found"}), 404
 
+    data = request.get_json()
     try:
-        new_we = WorkoutExercise(
-            workout_id=workout_id,
-            exercise_id=exercise_id,
-            reps=reps,
-            sets=sets,
-            duration_seconds=duration_seconds
-        )
-        db.session.add(new_we)
+        updated_exercise = schema.load(data, instance=exercise, partial=True)
         db.session.commit()
+        return jsonify(schema.dump(updated_exercise)), 200
     except IntegrityError:
         db.session.rollback()
-        return jsonify({"error": "This exercise is already linked to the workout"}), 400
-    except ValueError as ve:
-        db.session.rollback()
-        return jsonify({"error": str(ve)}), 400
-    except Exception as ex:
-        db.session.rollback()
-        return jsonify({"error": "Unexpected error: " + str(ex)}), 500
+        return jsonify({"error": "Invalid data or constraint violation"}), 400
 
-    return jsonify({
-        "id": new_we.id,
-        "workout_id": new_we.workout_id,
-        "exercise_id": new_we.exercise_id,
-        "reps": new_we.reps,
-        "sets": new_we.sets,
-        "duration_seconds": new_we.duration_seconds
-    }), 201
+@bp.route('/<int:id>', methods=['DELETE'])
+def delete_workout_exercise(id):
+    exercise = WorkoutExercise.query.get(id)
+    if not exercise:
+        return jsonify({"error": "WorkoutExercise not found"}), 404
+    db.session.delete(exercise)
+    db.session.commit()
+    return jsonify({"message": f"WorkoutExercise {id} deleted successfully"}), 200

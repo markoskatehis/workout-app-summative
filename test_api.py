@@ -9,7 +9,8 @@ def test_create_exercise():
         "category": "strength",
         "equipment_needed": False
     }
-    r = requests.post(f"{BASE_URL}/exercises", json=payload)
+    url = f"{BASE_URL}/exercises"
+    r = requests.post(url, json=payload)
     print("Create Exercise:", r.status_code, r.text)
 
     try:
@@ -24,7 +25,8 @@ def test_create_workout():
         "duration_minutes": 40,
         "notes": "Full body workout"
     }
-    r = requests.post(f"{BASE_URL}/workouts", json=payload)
+    url = f"{BASE_URL}/workouts"
+    r = requests.post(url, json=payload)
     print("Create Workout:", r.status_code, r.text)
 
     try:
@@ -40,7 +42,8 @@ def test_link_exercise_to_workout(workout_id, exercise_id):
         "reps": 12,
         "sets": 3
     }
-    r = requests.post(f"{BASE_URL}/workout_exercises", json=payload)
+    url = f"{BASE_URL}/workout_exercises"
+    r = requests.post(url, json=payload)
     print("Link Exercise to Workout:", r.status_code, r.text)
 
     try:

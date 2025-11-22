@@ -2,7 +2,7 @@
 
 from app import create_app
 from app.extensions import db
-from models import Exercise, Workout, WorkoutExercise
+from app.models import Exercise, Workout, WorkoutExercise
 
 app = create_app()
 with app.app_context():

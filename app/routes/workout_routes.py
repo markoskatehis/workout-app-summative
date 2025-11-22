@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from app.extensions import db
-from models import Workout, WorkoutExercise, Exercise
+from app.models import Workout, WorkoutExercise, Exercise
 from app.schemas_pkg import workout_schema, workouts_schema
 from datetime import date
 
