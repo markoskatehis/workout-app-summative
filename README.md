@@ -106,24 +106,6 @@ POST /workouts/<workout_id>/exercises/<exercise_id>/workout_exercises
 
 - Table constraints and model validations are implemented to enforce uniqueness and proper data integrity.
 
-
-## Project Structure
-
-app/
-├── __init__.py
-├── extensions.py
-├── models.py
-├── routes/
-│   ├── exercises_routes.py
-│   ├── workout_routes.py
-│   └── workout_exercise_routes.py
-├── schemas_pkg/
-│   ├── exercise_schema.py
-│   ├── workout_schema.py
-│   └── workout_exercise_schema.py
-└── seed/
-    └── seed_data.py
-
 ## Development & Git Workflow
 
 - Code is highly modular with clear separation of concerns.
