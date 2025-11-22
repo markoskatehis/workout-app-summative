@@ -26,8 +26,9 @@ class Exercise(db.Model):
 
     @validates("category")
     def validate_category(self, key, value):
-        if value.lower() not in ["strength", "cardio", "mobility", "hypertrophy"]:
-            raise ValueError("Category must be one of: strength, cardio, mobility, hypertrophy.")
+        allowed = ["strength", "cardio", "mobility", "hypertrophy"]
+        if value.lower() not in allowed:
+            raise ValueError(f"Category must be one of: {', '.join(allowed)}.")
         return value.lower()
 
     __table_args__ = (

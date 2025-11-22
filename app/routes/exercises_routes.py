@@ -17,14 +17,17 @@ def create_exercise():
     except Exception as e:
         return {"error": str(e)}, 400
 
+    eq_needed = data.get("equipment_needed")
+    if not isinstance(eq_needed, bool):
+        return {"error": "equipment_needed must be true or false"}, 400
+
     new_exercise = Exercise(
         name=data["name"],
         category=data["category"],
-        equipment_needed=data["equipment_needed"]
+        equipment_needed=eq_needed
     )
 
     db.session.add(new_exercise)
-
     try:
         db.session.commit()
     except IntegrityError:
@@ -52,7 +55,6 @@ def get_exercise(id):
             "notes": w.notes
         } for w in associated_workouts
     ]
-
     return jsonify(result), 200
 
 @bp.route("/<int:id>", methods=["PATCH"])
@@ -70,7 +72,10 @@ def update_exercise(id):
     if "category" in json_data:
         exercise.category = json_data["category"].lower() if json_data["category"] else exercise.category
     if "equipment_needed" in json_data:
-        exercise.equipment_needed = json_data["equipment_needed"]
+        eq_value = json_data["equipment_needed"]
+        if not isinstance(eq_value, bool):
+            return {"error": "equipment_needed must be true or false"}, 400
+        exercise.equipment_needed = eq_value
 
     try:
         db.session.commit()
@@ -85,7 +90,6 @@ def update_exercise(id):
         return {"error": "Unexpected error: " + str(ex)}, 500
 
     return exercise_schema.dump(exercise), 200
-
 
 @bp.route("/<int:id>", methods=["DELETE"])
 def delete_exercise(id):
