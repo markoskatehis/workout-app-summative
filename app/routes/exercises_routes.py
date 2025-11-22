@@ -54,3 +54,50 @@ def get_exercise(id):
     ]
 
     return jsonify(result), 200
+
+@bp.route("/<int:id>", methods=["PATCH"])
+def update_exercise(id):
+    exercise = Exercise.query.get(id)
+    if not exercise:
+        return {"error": "Exercise not found"}, 404
+
+    json_data = request.get_json()
+    if not json_data:
+        return {"error": "No input data provided"}, 400
+
+    if "name" in json_data:
+        exercise.name = json_data["name"].strip() if json_data["name"] else exercise.name
+    if "category" in json_data:
+        exercise.category = json_data["category"].lower() if json_data["category"] else exercise.category
+    if "equipment_needed" in json_data:
+        exercise.equipment_needed = json_data["equipment_needed"]
+
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
+        return {"error": "Exercise name must be unique"}, 400
+    except ValueError as ve:
+        db.session.rollback()
+        return {"error": str(ve)}, 400
+    except Exception as ex:
+        db.session.rollback()
+        return {"error": "Unexpected error: " + str(ex)}, 500
+
+    return exercise_schema.dump(exercise), 200
+
+
+@bp.route("/<int:id>", methods=["DELETE"])
+def delete_exercise(id):
+    exercise = Exercise.query.get(id)
+    if not exercise:
+        return {"error": "Exercise not found"}, 404
+
+    try:
+        db.session.delete(exercise)
+        db.session.commit()
+    except Exception as ex:
+        db.session.rollback()
+        return {"error": "Could not delete exercise: " + str(ex)}, 500
+
+    return {"message": f"Exercise {id} deleted successfully"}, 200

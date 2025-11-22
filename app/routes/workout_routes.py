@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from app.extensions import db
 from models import Workout, WorkoutExercise, Exercise
 from app.schemas_pkg import workout_schema, workouts_schema
+from datetime import date
 
 bp = Blueprint("workouts", __name__, url_prefix="/workouts")
 
@@ -40,3 +41,49 @@ def get_workout(id):
     result = workout_schema.dump(workout)
     result["exercises"] = exercises_info
     return jsonify(result), 200
+
+@bp.route("/<int:id>", methods=["PATCH"])
+def update_workout(id):
+    workout = Workout.query.get(id)
+    if not workout:
+        return {"error": "Workout not found"}, 404
+
+    json_data = request.get_json()
+    if not json_data:
+        return {"error": "No input data provided"}, 400
+
+    if "date" in json_data:
+        try:
+            workout.date = date.fromisoformat(json_data["date"])
+        except ValueError:
+            return {"error": "Invalid date format. Use YYYY-MM-DD."}, 400
+    if "duration_minutes" in json_data:
+        workout.duration_minutes = json_data["duration_minutes"]
+    if "notes" in json_data:
+        workout.notes = json_data["notes"]
+
+    try:
+        db.session.commit()
+    except ValueError as ve:
+        db.session.rollback()
+        return {"error": str(ve)}, 400
+    except Exception as ex:
+        db.session.rollback()
+        return {"error": "Unexpected error: " + str(ex)}, 500
+
+    return workout_schema.dump(workout), 200
+
+@bp.route("/<int:id>", methods=["DELETE"])
+def delete_workout(id):
+    workout = Workout.query.get(id)
+    if not workout:
+        return {"error": "Workout not found"}, 404
+
+    try:
+        db.session.delete(workout)
+        db.session.commit()
+    except Exception as ex:
+        db.session.rollback()
+        return {"error": "Could not delete workout: " + str(ex)}, 500
+
+    return {"message": f"Workout {id} deleted successfully"}, 200
