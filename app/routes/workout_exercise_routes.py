@@ -1,21 +1,20 @@
-# routes/workout_exercise_routes.py
 from flask import Blueprint, request, jsonify
 from sqlalchemy import exc
 
 from models import db, Workout, Exercise, WorkoutExercise
-from app.schemas.workout_exercise_schema import workout_exercise_schema
+from app.schemas_pkg.workout_exercise_schema import workout_exercise_schema
 
 bp = Blueprint("workout_exercises", __name__, url_prefix="/workouts")
 
 
 @bp.route("/<int:workout_id>/exercises/<int:exercise_id>/workout_exercises", methods=["POST"])
 def add_exercise_to_workout(workout_id, exercise_id):
-    w = Workout.query.get(workout_id)
-    if not w:
+    workout = Workout.query.get(workout_id)
+    if not workout:
         return jsonify({"error": "Workout not found"}), 404
 
-    e = Exercise.query.get(exercise_id)
-    if not e:
+    exercise = Exercise.query.get(exercise_id)
+    if not exercise:
         return jsonify({"error": "Exercise not found"}), 404
 
     payload = request.get_json() or {}

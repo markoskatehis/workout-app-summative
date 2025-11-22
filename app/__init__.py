@@ -2,6 +2,7 @@ import os
 from flask import Flask
 from flask_migrate import Migrate
 from .extensions import db
+from .routes.workout_exercise_routes import bp as we_bp
 
 def create_app():
     app = Flask(__name__)
@@ -20,5 +21,6 @@ def create_app():
     from .routes.workout_routes import bp as workout_bp
     app.register_blueprint(exercise_bp)
     app.register_blueprint(workout_bp)
+    app.register_blueprint(we_bp)
 
     return app

@@ -1,5 +1,5 @@
 from marshmallow import Schema, fields, validate, ValidationError, validates
-from app.schemas.workout_exercise_schema import WorkoutExerciseSchema
+from app.schemas_pkg.workout_exercise_schema import WorkoutExerciseSchema
 
 
 class WorkoutSchema(Schema):
